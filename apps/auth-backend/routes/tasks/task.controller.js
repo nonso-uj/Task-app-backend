@@ -4,7 +4,6 @@ import { Types } from "mongoose";
 
 export const GetTasks = async (req, res, next) => {
   const userId = req.user.userId;
-  console.log("first====== ", userId);
 
   try {
     const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) });
