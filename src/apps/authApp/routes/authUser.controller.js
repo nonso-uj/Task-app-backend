@@ -1,17 +1,18 @@
 import Joi from "joi";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-import AuthUser from "../../models/AuthUser.js";
-import { generateResetToken, signJwtToken } from "../../utils/helperFunctions.js";
-import PasswordResetToken from "../../models/PasswordResetToken.js";
+import AuthUser from "../models/AuthUser.js";
+import { generateResetToken, signJwtToken } from "../utils/helperFunctions.js";
+import PasswordResetToken from "../models/PasswordResetToken.js";
 
 dotenv.config();
 
 const DATE_NOW = new Date();
 
-export const RegisterUser = async (req, res, next) => {
+export const RegisterUser = async (req, res) => {
   const validateRequest = Joi.object({
     firstName: Joi.string().required().messages({
       "string.empty": "First name is required",
@@ -65,7 +66,7 @@ export const RegisterUser = async (req, res, next) => {
   }
 };
 
-export const RegisterGoogleUser = async (req, res, next) => {
+export const RegisterGoogleUser = async (req, res) => {
   const { googleId, email, lastName, firstName } = req.body;
 
   try {
@@ -77,7 +78,7 @@ export const RegisterGoogleUser = async (req, res, next) => {
         await user.save();
       }
 
-      const token = signJwtToken(user);
+      const token = signJwtToken(user._id, "1m", "access");
 
       return res.status(200).json({
         success: true,
@@ -108,7 +109,7 @@ export const RegisterGoogleUser = async (req, res, next) => {
       message: "New user created successfully",
     });
   } catch (error) {
-    console.error("Error creating user: ", error);
+    console.error("Error creating user google: ", error);
     return res.status(400).json({
       success: false,
       message: "Something went wrong",
@@ -117,7 +118,7 @@ export const RegisterGoogleUser = async (req, res, next) => {
   }
 };
 
-export const LoginUser = async (req, res, next) => {
+export const LoginUser = async (req, res) => {
   const validateRequest = Joi.object({
     email: Joi.string().required("Email is required"),
     password: Joi.string().required("Password is required"),
@@ -141,7 +142,19 @@ export const LoginUser = async (req, res, next) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = signJwtToken(user);
+    const token = signJwtToken(user._id, "1m", "access");
+
+    const refreshToken = signJwtToken(user._id, "1d", "refresh");
+
+    res.cookie("refreshToken", refreshToken, {
+      // domain: process.env.DOMAIN_URL,
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
     res.status(200).json({ user, token });
   } catch (error) {
     console.log("sign in error= ", error);
@@ -151,7 +164,39 @@ export const LoginUser = async (req, res, next) => {
   }
 };
 
-export const sendResetToken = async (req, res, next) => {
+export const RefreshToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({
+      error: "Invalid credentials!",
+      shouldLogout: true,
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const token = signJwtToken(decoded.userId, "1m", "access");
+    const newRefreshToken = signJwtToken(decoded.userId, "1d", "refresh");
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    res.status(200).json({ token });
+  } catch (error) {
+    res.clearCookie("refreshToken");
+    return res.status(401).json({
+      error: "Invalid token!",
+      shouldLogout: true,
+    });
+  }
+};
+
+export const sendResetToken = async (req, res) => {
   const validateRequest = Joi.object({
     email: Joi.string().email().required("Email is required"),
   });
@@ -204,7 +249,7 @@ export const sendResetToken = async (req, res, next) => {
   });
 };
 
-export const resetPassword = async (req, res, next) => {
+export const resetPassword = async (req, res) => {
   const { token, password } = req.body;
 
   if (!token || !password) {
