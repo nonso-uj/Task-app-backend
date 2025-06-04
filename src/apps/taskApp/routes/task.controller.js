@@ -8,7 +8,9 @@ export const GetTasks = async (req, res) => {
   const limit = parseInt(req.query.limit) || 5;
 
   const startIndex = (page - 1) * limit;
-  const total = await Task.countDocuments();
+  const total = await Task.find({
+    user_id: new Types.ObjectId(`${userId}`),
+  }).countDocuments();
 
   try {
     const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) })
@@ -80,6 +82,12 @@ export const UpdateTask = async (req, res) => {
 
   try {
     const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found!",
+      });
+    }
     task.status = req.body.status;
     await task.save();
 
@@ -104,7 +112,13 @@ export const DeleteTask = async (req, res) => {
   const taskId = req.params.taskId;
 
   try {
-    await Task.findByIdAndDelete(taskId);
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+    if (!deletedTask) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found!",
+      });
+    }
 
     const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) });
     res.status(201).json({

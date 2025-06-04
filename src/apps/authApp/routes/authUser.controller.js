@@ -78,7 +78,7 @@ export const RegisterGoogleUser = async (req, res) => {
         await user.save();
       }
 
-      const token = signJwtToken(user._id, "1m", "access");
+      const token = signJwtToken(user._id, "15m", "access");
 
       return res.status(200).json({
         success: true,
@@ -100,7 +100,7 @@ export const RegisterGoogleUser = async (req, res) => {
 
     await newUser.save();
 
-    const token = signJwtToken(newUser);
+    const token = signJwtToken(newUser, "15m", "access");
 
     return res.status(201).json({
       success: true,
@@ -142,7 +142,7 @@ export const LoginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = signJwtToken(user._id, "1m", "access");
+    const token = signJwtToken(user._id, "60m", "access");
 
     const refreshToken = signJwtToken(user._id, "1d", "refresh");
 
@@ -175,7 +175,7 @@ export const RefreshToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const token = signJwtToken(decoded.userId, "1m", "access");
+    const token = signJwtToken(decoded.userId, "15m", "access");
     const newRefreshToken = signJwtToken(decoded.userId, "1d", "refresh");
 
     res.cookie("refreshToken", newRefreshToken, {
