@@ -1,19 +1,32 @@
 import Joi from "joi";
-import Task from "../../models/Task.js";
+import Task from "../models/Task.js";
 import { Types } from "mongoose";
 
-export const GetTasks = async (req, res, next) => {
+export const GetTasks = async (req, res) => {
   const userId = req.user.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+
+  const startIndex = (page - 1) * limit;
+  const total = await Task.find({
+    user_id: new Types.ObjectId(`${userId}`),
+  }).countDocuments();
 
   try {
-    const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) });
+    const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) })
+      .skip(startIndex)
+      .limit(limit);
     res.status(201).json({
       success: true,
       message: "Successfull",
       tasks: tasks,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.log("Error creating task: ", error);
+    console.log("Error getting task: ", error);
     res.status(400).json({
       success: false,
       message: "Something went wrong",
@@ -22,7 +35,7 @@ export const GetTasks = async (req, res, next) => {
   }
 };
 
-export const CreateTask = async (req, res, next) => {
+export const CreateTask = async (req, res) => {
   const userId = req.user.userId;
 
   const validateRequest = Joi.object({
@@ -63,12 +76,18 @@ export const CreateTask = async (req, res, next) => {
   }
 };
 
-export const UpdateTask = async (req, res, next) => {
+export const UpdateTask = async (req, res) => {
   const userId = req.user.userId;
   const taskId = req.params.taskId;
 
   try {
     const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found!",
+      });
+    }
     task.status = req.body.status;
     await task.save();
 
@@ -79,7 +98,7 @@ export const UpdateTask = async (req, res, next) => {
       tasks: tasks,
     });
   } catch (error) {
-    console.log("Error creating task: ", error);
+    console.log("Error updating task: ", error);
     res.status(400).json({
       success: false,
       message: "Something went wrong",
@@ -88,13 +107,18 @@ export const UpdateTask = async (req, res, next) => {
   }
 };
 
-
-export const DeleteTask = async (req, res, next) => {
+export const DeleteTask = async (req, res) => {
   const userId = req.user.userId;
   const taskId = req.params.taskId;
 
   try {
-    await Task.findByIdAndDelete(taskId);
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+    if (!deletedTask) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found!",
+      });
+    }
 
     const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) });
     res.status(201).json({
@@ -103,7 +127,7 @@ export const DeleteTask = async (req, res, next) => {
       tasks: tasks,
     });
   } catch (error) {
-    console.log("Error creating task: ", error);
+    console.log("Error deleting task: ", error);
     res.status(400).json({
       success: false,
       message: "Something went wrong",

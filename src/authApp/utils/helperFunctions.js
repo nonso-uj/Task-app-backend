@@ -14,8 +14,8 @@ export const generateResetToken = async () => {
   return { resetToken, hashedToken, resetExpires };
 };
 
-export const signJwtToken = (user) => {
-  return jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "30m",
+export const signJwtToken = (userId, timeFrame, token) => {
+  return jwt.sign({ userId: userId }, token === 'access' ? process.env.ACCESS_TOKEN_SECRET : process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: timeFrame,
   });
 };
