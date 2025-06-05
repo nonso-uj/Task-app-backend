@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import authAppRouter from "./src/apps/authApp/authApp.js";
-import taskAppRouter from "./src/apps/taskApp/taskApp.js";
+import authAppRouter from "./src/authApp/authApp.js";
+import taskAppRouter from "./src/taskApp/taskApp.js";
 import cookieParser from "cookie-parser";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
@@ -61,7 +61,7 @@ export async function setupApp() {
   app.use(cookieParser());
   app.use(express.json());
   app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(`${API_VERSION}/api-docs`, swaggerUI.serve, swaggerUI.setup(specs));
+  app.use(`${API_VERSION}/docs`, swaggerUI.serve, swaggerUI.setup(specs));
 
   // Set Referrer-Policy header
   app.use((req, res, next) => {
@@ -74,6 +74,11 @@ export async function setupApp() {
       response: "pong",
       server_status: "running",
     });
+  });
+  
+  app.get(`${API_VERSION}/docs.json`, (req, res) => {
+    res.setHeader("Content-Type", "application/json")
+    res.send(specs);
   });
 
   app.use(`${API_VERSION}/auth-backend`, authAppRouter);

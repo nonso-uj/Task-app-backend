@@ -6,7 +6,7 @@ import {
   UpdateTask,
 } from "./task.controller.js";
 import { authUser } from "../../authApp/utils/AuthMiddleware.js";
-import rateLimiterMiddleware from "../../generalUtils/middleware.js";
+import rateLimiterMiddleware from "../../utils/middleware.js";
 
 const taskRouter = express.Router();
 
