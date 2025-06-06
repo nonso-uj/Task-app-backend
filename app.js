@@ -15,10 +15,10 @@ const APP_URL = process.env.APP_URL;
 
 const corsOptions = {
   origin: [
+    "https://nonso-react-auth-app.netlify.app",
+    "https://*.netlify.app",
     process.env.APP_URL,
-    'https://nonso-react-auth-app.netlify.app',
-    'https://*.netlify.app'
-  ],
+  ].filter(Boolean),
   credentials: true,
   optionsSuccessStatus: 201,
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -43,17 +43,22 @@ const swaggerOptions = {
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        }
-      }
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
     },
-    security: [{
-      bearerAuth: []
-    }]
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
-  apis: ["./src/apps/authApp/routes/*.router.js", "./src/apps/taskApp/routes/*.router.js"],
+  apis: [
+    "./src/apps/authApp/routes/*.router.js",
+    "./src/apps/taskApp/routes/*.router.js",
+  ],
 };
 
 export async function setupApp() {
@@ -79,9 +84,9 @@ export async function setupApp() {
       server_status: "running",
     });
   });
-  
+
   app.get(`${API_VERSION}/docs.json`, (req, res) => {
-    res.setHeader("Content-Type", "application/json")
+    res.setHeader("Content-Type", "application/json");
     res.send(specs);
   });
 
