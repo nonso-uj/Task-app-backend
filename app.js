@@ -14,7 +14,11 @@ const API_VERSION = "/api";
 const APP_URL = process.env.APP_URL;
 
 const corsOptions = {
-  origin: true,
+  origin: [
+    process.env.APP_URL,
+    'https://nonso-react-auth-app.netlify.app',
+    'https://*.netlify.app'
+  ],
   credentials: true,
   optionsSuccessStatus: 201,
   allowedHeaders: ["Content-Type", "Authorization"],
