@@ -100,7 +100,18 @@ export const RegisterGoogleUser = async (req, res) => {
 
     await newUser.save();
 
-    const token = signJwtToken(newUser, "15m", "access");
+    const token = signJwtToken(newUser._id, "15m", "access");
+
+    const refreshToken = signJwtToken(newUser._id, "1d", "refresh");
+
+    res.cookie("refreshToken", refreshToken, {
+      // domain: process.env.DOMAIN_URL,
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
 
     return res.status(201).json({
       success: true,

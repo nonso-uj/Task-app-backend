@@ -8,9 +8,9 @@ export const GetTasks = async (req, res) => {
   const limit = parseInt(req.query.limit) || 5;
 
   const startIndex = (page - 1) * limit;
-  const total = await Task.find({
+  const total = await Task.countDocuments({
     user_id: new Types.ObjectId(`${userId}`),
-  }).countDocuments();
+  }).exec();
 
   try {
     const tasks = await Task.find({ user_id: new Types.ObjectId(`${userId}`) })

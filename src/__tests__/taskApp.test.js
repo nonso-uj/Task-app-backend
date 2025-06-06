@@ -2,7 +2,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import request from "supertest";
 import jwt from "jsonwebtoken";
-import Task from "../apps/taskApp/models/Task.js";
+import Task from "../taskApp/models/Task.js";
 
 const { setupApp } = await import("../../app.js");
 
