@@ -107,7 +107,7 @@ export const RegisterGoogleUser = async (req, res) => {
     res.cookie("refreshToken", refreshToken, {
       // domain: process.env.DOMAIN_URL,
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "none",
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
@@ -160,7 +160,7 @@ export const LoginUser = async (req, res) => {
     res.cookie("refreshToken", refreshToken, {
       // domain: process.env.DOMAIN_URL,
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "none",
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
@@ -191,7 +191,7 @@ export const RefreshToken = async (req, res) => {
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "none",
       secure: process.env.NODE_ENV === "production",
       maxAge: 1 * 24 * 60 * 60 * 1000,
       path: "/",
