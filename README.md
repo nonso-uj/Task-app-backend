@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a comprehensive documentation for the Task Manager REST API built with Node.js (Express) and MongoDB. The API provides JWT authentication, rate limiting, CRUD operations with pagination, and automated tests.
+This is a comprehensive documentation for the Task Manager REST API built with Node.js (Express) and MongoDB. The API provides JWT authentication, rate limiting, CRUD operations with pagination, and automated tests. This backend is designed to work with the [Task Manager Frontend React App](https://github.com/nonso-uj/react-auth-app).
 
 ## Table of Contents
 
