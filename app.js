@@ -11,7 +11,6 @@ import swaggerUI from "swagger-ui-express";
 dotenv.config();
 
 const API_VERSION = "/api";
-const APP_URL = process.env.APP_URL;
 
 const corsOptions = {
   origin: [
@@ -56,8 +55,8 @@ const swaggerOptions = {
     ],
   },
   apis: [
-    "./src/apps/authApp/routes/*.router.js",
-    "./src/apps/taskApp/routes/*.router.js",
+    "./src/authApp/routes/*.router.js",
+    "./src/taskApp/routes/*.router.js",
   ],
 };
 
